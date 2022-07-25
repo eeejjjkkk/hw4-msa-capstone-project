@@ -45,11 +45,11 @@ public class Order {
     }
 
     public static void orderChanged(DeliveryStarted deliveryStarted) {
-        /** Example 1:  new item 
+        /** Example 1:  new item   */ 
         Order order = new Order();
         repository().save(order);
 
-        */
+        
 
         /** Example 2:  finding and process
         
