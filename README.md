@@ -99,7 +99,7 @@
   - 팀별로 주제 선정 및 이벤트 스토밍 진행
 
 - GitHub : [https://github.com/jhy156456/hw4-msa-capstone-project]
-- <a href="https://gitpod.io/#/https://github.com/wonslog/hw3-msa-capstone-project" target="_blank">GitPod</a>
+- GitPod
   - Github 계정 및 Repositoy(public) 준비 ( **for FORK** )
   - gitpod.io/#/{Github-Repository-URL}
   - Collaboration & Sharing
@@ -107,7 +107,7 @@
     - 팀장 / 팀원 : gitpod.io > Settings > Integrations > GitHub > Edit Permissions > Public_repo Check ; GitPod - GitHub 권한설정
   * gitpod 초기 연동시 필요한 라이브러리들이 없는 상태이며 **.gitpod.yml** 파일에 선언한 명령어들 자동 실행됨
   * 실행 안되는 명령어들이 있으면 직접 설치
-- <a href="https://794003312682.signin.aws.amazon.com/console">AWS</a> (_약 15~20분 소요_)
+- AWS (_약 15~20분 소요_)
   - 계정정보(IAM)메일 발송
   - Region-Code : 메일 내 Region
   - Cluster-Name : Account-Id
