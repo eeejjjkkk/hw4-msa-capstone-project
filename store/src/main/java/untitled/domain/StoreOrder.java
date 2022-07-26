@@ -66,6 +66,7 @@ public class StoreOrder {
     public void assign() {
 
         setStatus("ASSIGN");
+        setRiderid("rider1");
 
         Assigned assigned = new Assigned(this);
         assigned.publishAfterCommit();
