@@ -59,9 +59,18 @@ public class StoreOrder {
 
     }
 
-    public void reject() {}
+    public void reject() {
 
-    public void assign(AssignCommand assignCommand) {}
+    }
+
+    public void assign() {
+
+        setStatus("ASSIGN");
+
+        Assigned assigned = new Assigned(this);
+        assigned.publishAfterCommit();
+
+    }
 
 
     public static void cancelStoreOrder(OrderCancelled orderCancelled) {
