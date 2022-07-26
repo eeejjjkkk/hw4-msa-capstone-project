@@ -65,13 +65,12 @@ public class StoreOrderController {
     }
 
     @RequestMapping(
-        value = "storeOrders/{id}/assign/{riderId}",
+        value = "storeOrders/{id}/assign",
         method = RequestMethod.PUT,
         produces = "application/json;charset=UTF-8"
     )
     public StoreOrder assign(
         @PathVariable(value = "id") Long id,
-        @PathVariable(value = "riderId") String riderId,
         HttpServletRequest request,
         HttpServletResponse response
     ) throws Exception {
@@ -80,10 +79,10 @@ public class StoreOrderController {
             id
         );
         System.out.println("***********************");
-        System.out.println(riderId);
+        //System.out.println(riderId);
         optionalStoreOrder.orElseThrow(() -> new Exception("No Entity Found"));
         StoreOrder storeOrder = optionalStoreOrder.get();
-        storeOrder.assign(assignCommand);
+        storeOrder.assign();
 
         
 
