@@ -85,6 +85,7 @@ public class StoreOrder {
     }
 
     public static void loadOrderList(OrderPlaced orderPlaced) {
+<<<<<<< HEAD
         /** Example 1:  new item */ 
         StoreOrder storeOrder = new StoreOrder();
 
@@ -95,6 +96,17 @@ public class StoreOrder {
         repository().save(storeOrder);
 
         
+=======
+        /** Example 1:  new item 
+        */
+        StoreOrder storeOrder = new StoreOrder();
+        //20220706 order정보getset
+        storeOrder.setOrderId(orderPlaced.getOrderId());
+        storeOrder.setIteminfo(orderPlaced.getIteminfo());
+        storeOrder.setPayment(orderPlaced.getPayment());
+        repository().save(storeOrder);
+
+>>>>>>> refs/remotes/origin/main
 
         /** Example 2:  finding and process
         
