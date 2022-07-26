@@ -35,11 +35,11 @@ public class Delivery {
         //Following code causes dependency to external APIs
         // it is NOT A GOOD PRACTICE. instead, Event-Policy mapping is recommended.
 
-        untitled.external.PayList payList = new untitled.external.PayList();
-        // mappings goes here
-        DeliveryApplication.applicationContext
-            .getBean(untitled.external.PayListService.class)
-            .pay(payList);
+    //    untitled.external.PayList payList = new untitled.external.PayList();
+    //    // mappings goes here
+    //   DeliveryApplication.applicationContext
+    //        .getBean(untitled.external.PayListService.class)
+    //        .pay(payList);
 
         DeliveryStarted deliveryStarted = new DeliveryStarted(this);
         deliveryStarted.publishAfterCommit();
@@ -55,12 +55,32 @@ public class Delivery {
         return deliveryRepository;
     }
 
+    public void accept() {
+
+        setStatus("DeliveryAccepted");
+
+        DeliveryStarted deliveryStarted = new DeliveryStarted(this);
+        deliveryStarted.publishAfterCommit();
+    }
+
+
     public static void loadToDeliveryList(Assigned assigned) {
-        /** Example 1:  new item 
+        /** Example 1:  new item */ 
         Delivery delivery = new Delivery();
+
+        // System.out.println("***********************");
+        // System.out.println(assigned.getOrderId());
+
+        delivery.setOrderId(assigned.getOrderId()); 
+        delivery.setPayment(assigned.getPayment()); 
+        delivery.setPrice(3000); 
+        delivery.setRiderId(assigned.getRiderid()); 
+        delivery.setStatus(assigned.getStatus()); 
+        //System.out.println(delivery);
+
         repository().save(delivery);
 
-        */
+        
 
         /** Example 2:  finding and process
         
