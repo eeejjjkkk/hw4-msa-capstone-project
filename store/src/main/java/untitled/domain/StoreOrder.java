@@ -72,10 +72,14 @@ public class StoreOrder {
 
     public static void loadOrderList(OrderPlaced orderPlaced) {
         /** Example 1:  new item 
+        */
         StoreOrder storeOrder = new StoreOrder();
+        //20220706 order정보getset
+        storeOrder.setOrderId(orderPlaced.getOrderId());
+        storeOrder.setIteminfo(orderPlaced.getIteminfo());
+        storeOrder.setPayment(orderPlaced.getPayment());
         repository().save(storeOrder);
 
-        */
 
         /** Example 2:  finding and process
         
