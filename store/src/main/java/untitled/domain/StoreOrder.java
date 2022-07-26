@@ -61,6 +61,7 @@ public class StoreOrder {
 
     public void reject() {}
 
+    public void assign(AssignCommand assignCommand) {}
 
 
     public static void cancelStoreOrder(OrderCancelled orderCancelled) {
