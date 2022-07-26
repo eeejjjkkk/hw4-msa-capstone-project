@@ -63,6 +63,14 @@ public class Delivery {
         deliveryStarted.publishAfterCommit();
     }
 
+    public void confirmDelivered() {
+
+        setStatus("Finish");
+
+        DeliveryCompleted deliveryCompleted = new DeliveryCompleted(this);
+        deliveryCompleted.publishAfterCommit();
+    }
+
 
     public static void loadToDeliveryList(Assigned assigned) {
         /** Example 1:  new item */ 
