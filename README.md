@@ -200,30 +200,30 @@ spring:
 
 ### Deploy
 -deploy 테스트를 위해 도커 이미지 생성 및 배포
-'''
+```
 cd order/
 mvn package -B -Dmaven.test.skip=true
 docker build -t eejjkk2017/order:0727 .     
 docker push eejjkk2017/order:0727 
-'''
-'''
+```
+```
 cd store/
 mvn package -B -Dmaven.test.skip=true
 docker build -t eejjkk2017/store:0727 .     
 docker push eejjkk2017/store:0727 
-'''
-'''
+```
+```
 cd gateway/
 mvn package -B -Dmaven.test.skip=true
 docker build -t eejjkk2017/gateway:0727 .     
 docker push eejjkk2017/gateway:0727 
-'''
-'''
+```
+```
 cd delivery/
 mvn package -B -Dmaven.test.skip=true
 docker build -t eejjkk2017/delivery:0727 .     
 docker push eejjkk2017/delivery:0727 
-'''
+```
 
 ### Circuit Breaker
 #### Circuit Breaker 테스트 환경설정 
