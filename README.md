@@ -313,5 +313,65 @@ Transfer-Encoding: chunked
 }
 ```
 
+### Autoscale(HPA)
+1. auto scaler 설정 및 설정값 확인
+```
+# auto scaler 설정
+$ kubectl autoscale deployment order --cpu-percent=20 --min=1 --max=3
+
+# 설정값 확인
+$ kubectl get hpa
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+order   Deployment/order   <unknown>/20%   1         3         1          50m 
+```
+
+2. deployment.yaml 파일 수정(아래 추가)
+```
+resources:
+    limits:
+      cpu: 500m
+    requests:
+      cpu: 200m
+```
+
+3. 배포
+```
+kubectl apply -f order/kubernetes/deployment.yaml 
+```
+
+4. auto scale 설정 테스트
+-seige 명령으로 부하를 주어 pod 개수가 늘어나는 것을 확인
+
+```
+kubectl exec -it siege -- /bin/bash
+
+# 결과 
+Lifting the server siege...
+Transactions:                   2130 hits
+Availability:                 100.00 %
+Elapsed time:                  39.33 secs
+Data transferred:               0.04 MB
+Response time:                  0.37 secs
+Transaction rate:              54.16 trans/sec
+Throughput:                     0.00 MB/sec
+Concurrency:                   19.92
+Successful transactions:        2155
+Failed transactions:               0
+Longest transaction:            0.42
+Shortest transaction:           0.19
+```
+
+##### order pod 개수 증가 확인 
+```
+order-544d5cbfc-4s2dc       1/1     Running            0          5m13s
+order-544d5cbfc-dmlkt       1/1     Running            0          5m13s
+order-544d5cbfc-j29l8       1/1     Running            0          10m
+```
+
+##### cpu 정보 확인
+'''
+NAME    REFERENCE          TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
+order   Deployment/order   120%/20%    1         3         3          109m
+'''
 
 
