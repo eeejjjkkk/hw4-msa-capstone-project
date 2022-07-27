@@ -49,26 +49,30 @@ Async (event-driven), Eventual Consistency
 ### SAGA
 #### 구현
 각 서비스별로 개별 실행한다.
-'''
+```
 cd order/
 mvn spring-boot:run
-'''
-'''
+```
+
+```
 cd store/
 mvn spring-boot:run
-'''
-'''
+```
+
+```
 cd gateway/
 mvn spring-boot:run
-'''
-'''
+```
+
+```
 cd delivery/
 mvn spring-boot:run
-'''
-'''
+```
+
+```
 cd dashboard/
 mvn spring-boot:run
-'''
+```
 
 ### CQRS Pattern
 * 주문 조회, 주문 요청
@@ -370,9 +374,8 @@ order-544d5cbfc-j29l8       1/1     Running            0          10m
 ```
 
 ##### cpu 정보 확인
-'''
+
+```
 NAME    REFERENCE          TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
 order   Deployment/order   120%/20%    1         3         3          109m
-'''
-
-
+```
