@@ -21,5 +21,297 @@ Async (event-driven), Eventual Consistency
 
 ### 분석/설계 
 
+#### 완성된 모형
+![캡처](/images/model1.PNG)
+
+#### 완성본에 대한 기능적/비기능적 요구사항을 커버하는지 검증
+![캡처](/images/model2.PNG)
+
+```
+-고객이 퀵서비스를 접수한다 (ok)
+-퀵서비스 업체에서 accept한다 (ok)
+- 퀵서비스 업체에서 assign 하면 배달 기사가 배정된다 (ok)
+-배달 기사가 accept하면 배달을 출발한다 (ok)
+-도착지의 고객이 수취 완료를 한다 (ok)
+```
+
+#### 헥사고날 아키텍처 다이어그램 도출
+![캡처](/images/hex.PNG)
+
+#### 트랙잭션 처리
+```
+-고객 접수시 퀵서비스 접수 리스트에 추가
+-퀵서비스업체 assign시 배달 리스트 추가
+-접수, 배송상태 알림
+```
+
+### SAGA
+#### 구현
+각 서비스별로 개별 실행한다.
+'''
+cd order/
+mvn spring-boot:run
+'''
+'''
+cd store/
+mvn spring-boot:run
+'''
+'''
+cd gateway/
+mvn spring-boot:run
+'''
+'''
+cd delivery/
+mvn spring-boot:run
+'''
+'''
+cd dashboard/
+mvn spring-boot:run
+'''
+
+### CQRS Pattern
+* 주문 조회, 주문 요청
+```
+http http://localhost:8088/orders
+http POST localhost:8088/orders address="서울특별시 마포구" destination="인천광역시 부평구" iteminfo="서류" payment="후불" orderId="1" 
+```
+```
+HTTP/1.1 201 Created
+Content-Type: application/json
+Date: Wed, 27 Jul 2022 06:59:24 GMT
+Location: http://localhost:8081/orders/1
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+transfer-encoding: chunked
+
+{
+    "_links": {
+        "order": {
+            "href": "http://localhost:8081/orders/1"
+        },
+        "self": {
+            "href": "http://localhost:8081/orders/1"
+        }
+    },
+    "address": "서울특별시 마포구",
+    "destination": "인천광역시 부평구",
+    "iteminfo": "서류",
+    "orderId": "1",
+    "payment": "후불"
+}
+```
+
+#### 카프카
+```
+/usr/local/kafka/bin/kafka-server-start.sh /usr/local/kafka/config/server.properties
+```
+```
+{"eventType":"OrderPlaced","timestamp":1658900433011,"id":3368,"address":"경기도","destination":"수원","payment":"후불","iteminfo":"서류","orderId":"1"}
+```
+
+#### 마이페이지 조회
+-dashboard 기능을 통해 배송 상태를 조회할 수 있다 
+```
+http GET localhost:8088/myPages/
+```
+```
+HTTP/1.1 200 OK
+Content-Type: application/hal+json
+Date: Wed, 27 Jul 2022 07:04:00 GMT
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+transfer-encoding: chunked
+
+{
+    "_embedded": {
+        "myPages": [
+            {
+                "_links": {
+                    "myPage": {
+                        "href": "http://localhost:8085/myPages/2"
+                    },
+                    "self": {
+                        "href": "http://localhost:8085/myPages/2"
+                    }
+                },
+                "status": "접수요청"
+            }
+        ]
+    },
+    "_links": {
+        "profile": {
+            "href": "http://localhost:8085/profile/myPages"
+        },
+        "self": {
+            "href": "http://localhost:8085/myPages/"
+        }
+    },
+    "page": {
+        "number": 0,
+        "size": 20,
+        "totalElements": 1,
+        "totalPages": 1
+    }
+}
+```
+
+### Gateway 
+-Gateway 기능을 통해 진입점을 통일하여 해당 서비스로 라우팅 해준다.
+-라우팅 정보는 application.yaml에서 확인한다.
+
+```
+spring:
+  profiles: default
+  cloud:
+    gateway:
+      routes:
+        - id: order
+          uri: http://localhost:8081
+          predicates:
+            - Path=/orders/** 
+        - id: store
+          uri: http://localhost:8082
+          predicates:
+            - Path=/storeOrders/** 
+        - id: delivery
+          uri: http://localhost:8083
+          predicates:
+            - Path=/deliveries/** 
+        - id: Pay
+          uri: http://localhost:8084
+          predicates:
+            - Path=/payLists/** 
+        - id: dashboard
+          uri: http://localhost:8085
+          predicates:
+            - Path= /myPages/**
+        - id: frontend
+          uri: http://localhost:8080
+          predicates:
+            - Path=/**
+```
+
+### Deploy
+-deploy 테스트를 위해 도커 이미지 생성 및 배포
+'''
+cd order/
+mvn package -B -Dmaven.test.skip=true
+docker build -t eejjkk2017/order:0727 .     
+docker push eejjkk2017/order:0727 
+'''
+'''
+cd store/
+mvn package -B -Dmaven.test.skip=true
+docker build -t eejjkk2017/store:0727 .     
+docker push eejjkk2017/store:0727 
+'''
+'''
+cd gateway/
+mvn package -B -Dmaven.test.skip=true
+docker build -t eejjkk2017/gateway:0727 .     
+docker push eejjkk2017/gateway:0727 
+'''
+'''
+cd delivery/
+mvn package -B -Dmaven.test.skip=true
+docker build -t eejjkk2017/delivery:0727 .     
+docker push eejjkk2017/delivery:0727 
+'''
+
+### Circuit Breaker
+#### Circuit Breaker 테스트 환경설정 
+1. 배송서비스의 Replica를 3개로 늘인다.
+```
+kubectl scale deploy delivery --replicas=3 -n istio-cb-ns
+```
+
+2. Terminal을 2개 더 준비한다. 배송 컨테이너 Pod 의 IP를 확인한다.
+```
+kubectl get pod -o wide -n istio-cb-ns
+kubectl exec -it pod/siege-75d5587bf6-hwzdq -n istio-cb-ns -- /bin/bash
+```
+```
+root@siege-75d5587bf6-hwzdq:/# http http://delivery:8080/actuator/echo
+HTTP/1.1 200 
+Content-Length: 40
+Content-Type: text/plain;charset=UTF-8
+Date: Wed, 27 Jul 2022 06:20:54 GMT
+
+delivery-67ff6476bb-g64jz/192.168.74.126
+
+root@siege-75d5587bf6-hwzdq:/# http http://delivery:8080/actuator/echo
+HTTP/1.1 200 
+Content-Length: 38
+Content-Type: text/plain;charset=UTF-8
+Date: Wed, 27 Jul 2022 06:20:57 GMT
+
+delivery-67ff6476bb-lwplk/192.168.26.9
+
+root@siege-75d5587bf6-hwzdq:/# http http://delivery:8080/actuator/echo
+HTTP/1.1 200 
+Content-Length: 40
+Content-Type: text/plain;charset=UTF-8
+Date: Wed, 27 Jul 2022 06:21:01 GMT
+
+delivery-67ff6476bb-x4vqx/192.168.48.207
+
+root@siege-75d5587bf6-hwzdq:/# http http://delivery:8080/actuator/echo
+HTTP/1.1 200 
+Content-Length: 40
+Content-Type: text/plain;charset=UTF-8
+Date: Wed, 27 Jul 2022 06:21:03 GMT
+
+delivery-67ff6476bb-x4vqx/192.168.48.207
+```
+
+3. 새로운 터미널에서 Delivery 컨테이너로 접속하여 명시적으로 5xx 오류를 발생 시킨다.
+```
+kubectl exec -it pod/delivery-67ff6476bb-g64jz -n istio-cb-ns -c delivery -- /bin/sh
+```
+```
+/ # apk update
+/ # apk add httpie
+/ # http PUT http://localhost:8080/actuator/down
+```
+```
+HTTP/1.1 200 
+Content-Type: application/json;charset=UTF-8
+Date: Wed, 27 Jul 2022 06:22:25 GMT
+Transfer-Encoding: chunked
+
+{
+    "status": "DOWN"
+}
+```
+
+4. Circuit Breaker 동작 확인
+```
+http GET http://delivery:8080/actuator/health
+```
+```
+root@siege-75d5587bf6-hwzdq:/# http GET http://delivery:8080/actuator/health
+HTTP/1.1 200 
+Content-Type: application/vnd.spring-boot.actuator.v2+json;charset=UTF-8
+Date: Wed, 27 Jul 2022 06:23:06 GMT
+Transfer-Encoding: chunked
+
+{
+    "status": "UP"
+}
+
+root@siege-75d5587bf6-hwzdq:/# http GET http://delivery:8080/actuator/health
+HTTP/1.1 503 
+Connection: close
+Content-Type: application/vnd.spring-boot.actuator.v2+json;charset=UTF-8
+Date: Wed, 27 Jul 2022 06:23:08 GMT
+Transfer-Encoding: chunked
+
+{
+    "status": "DOWN"
+}
+```
+
 
 
